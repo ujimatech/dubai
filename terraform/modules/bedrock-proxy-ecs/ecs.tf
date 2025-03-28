@@ -72,8 +72,8 @@ resource "aws_ecs_task_definition" "my_task" {
   family                   = "my-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "512"
-  memory                   = "1024"
+  cpu                      = "1024"
+  memory                   = "2048"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_execution_role.arn
 
@@ -81,8 +81,8 @@ resource "aws_ecs_task_definition" "my_task" {
     {
       name      = "proxy-api"
       image     = "366590864501.dkr.ecr.us-west-2.amazonaws.com/bedrock-proxy-api-ecs:latest"
-      cpu       = 512
-      memory    = 1024
+      cpu       = 1024
+      memory    = 2048
       essential = true
 
       portMappings = [
@@ -103,7 +103,7 @@ resource "aws_ecs_task_definition" "my_task" {
       secrets = [
         {
           name      = "API_KEY"
-          valueFrom = "${var.api_key_secret_arn}:api_key::"
+          valueFrom = "${var.api_key_secret_arn}:BEDROCKPROXY_API_KEY::"
         }
       ]
     }

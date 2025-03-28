@@ -1,5 +1,3 @@
-# Generate start for Terraform that will used AWS provider
-
 terraform {
   backend "local" {}
   required_providers {
@@ -14,6 +12,10 @@ terraform {
     awscc = {
       source  = "hashicorp/awscc"
       version = "~> 1.0"
+    }
+    ansible = {
+      source = "ansible/ansible"
+      version = "1.3.0"
     }
   }
 }

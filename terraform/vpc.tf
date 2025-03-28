@@ -4,15 +4,32 @@ module "vpc" {
   name = "DubAI-vpc"
   cidr = "10.0.0.0/16"
 
-  azs             = ["us-west-2a"]
-  private_subnets = ["10.0.1.0/24"]
-  public_subnets  = ["10.0.101.0/24"]
+  azs             = ["us-west-2a", "us-west-2b"]
+  private_subnets = ["10.0.1.0/24", "10.0.3.0/24"]
+  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24"]
 
   enable_nat_gateway = true
+  single_nat_gateway  = true
   enable_vpn_gateway = false
 
 }
 
+# module "fck-nat" {
+#   source = "RaJiska/fck-nat/aws"
+#
+#   name                 = "my-fck-nat"
+#   vpc_id               = "vpc-abc1234"
+#   subnet_id            = "subnet-abc1234"
+#   # ha_mode              = true                 # Enables high-availability mode
+#   # eip_allocation_ids   = ["eipalloc-abc1234"] # Allocation ID of an existing EIP
+#   # use_cloudwatch_agent = true                 # Enables Cloudwatch agent and have metrics reported
+#
+#   update_route_tables = true
+#   route_tables_ids = {
+#     "your-rtb-name-A" = "rtb-abc1234Foo"
+#     "your-rtb-name-B" = "rtb-abc1234Bar"
+#   }
+# }
 
 ####
 # Its possible to get internal DNS resolution working with Tailscale by using Route 53 Resolver.

@@ -4,13 +4,11 @@
 variable "ecs_cluster_name" {
   description = "Name of the ECS cluster"
   type        = string
-  default     = "my-ecs-cluster"
 }
 
 variable "ecs_service_name" {
   description = "ECS service name for built-in service discovery"
   type        = string
-  default     = "my-ecs-service"
 }
 
 variable "ecs_task_port" {
@@ -46,4 +44,7 @@ variable "default_model_id" {
 variable "api_key_secret_arn" {
   description = "The ARN of the API key stored in AWS Secrets Manager"
   type        = string
+}
+
+variable "s3_bucket_name" {
 }
