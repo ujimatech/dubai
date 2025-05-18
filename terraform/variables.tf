@@ -43,3 +43,28 @@ variable "postgres_db_password" {
     type = string
     sensitive = true
 }
+
+### Dockerstuff
+variable "aws_region" {
+  description = "AWS region to deploy resources"
+  default     = "us-west-2"
+  type        = string
+}
+
+variable "repository_name" {
+  description = "Name for the ECR repository"
+  default     = "mcpo-proxy"
+  type        = string
+}
+
+variable "image_tag" {
+  description = "Tag for the Docker image"
+  default     = "latest"
+  type        = string
+}
+
+variable "dockerfile_path" {
+  description = "Path to the Dockerfile"
+  default     = "mcpo"
+  type        = string
+}

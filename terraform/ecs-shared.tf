@@ -49,3 +49,34 @@ resource "aws_service_discovery_service" "openwebui" {
     failure_threshold = 1
   }
 }
+
+resource "aws_security_group" "ecs" {
+  name        = "ecs-security-group"
+  description = "Security group for ECS service communication"
+  vpc_id      = module.vpc.vpc_id
+
+  # Allow ECS tasks to communicate with each other
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+    description = "Allow internal communication between ECS tasks"
+  }
+
+  ingress {
+    from_port       = 0
+    protocol        = "-1"
+    to_port         = 0
+    security_groups = [module.tailscale.security_group_id]
+    description     = "Allow ECS tasks to communicate with Tailscale router"
+  }
+
+  # Allow outbound traffic to anywhere (for dependencies like databases)
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}

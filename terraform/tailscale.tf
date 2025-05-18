@@ -1,16 +1,12 @@
 module "tailscale" {
   source = "masterpointio/tailscale/aws"
-
   namespace = "dubai"
   stage     = "prod"
   name      = "tailscale"
-
-
   vpc_id           = module.vpc.vpc_id
   subnet_ids       = module.vpc.private_subnets
   advertise_routes = [module.vpc.vpc_cidr_block]
-
-
+  max_size = 1
   ephemeral = true
 
 }

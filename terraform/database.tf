@@ -7,7 +7,7 @@ resource "aws_rds_cluster" "aurora_cluster" {
   cluster_identifier = "${var.project_name}-cluster"
   engine             = "aurora-postgresql"
   engine_mode        = "provisioned"
-  engine_version     = "16.4"
+  engine_version     = "16.6"
   database_name      = "${var.project_name}"
   master_username    = var.postgres_db_user
   master_password    = var.postgres_db_password # Store this securely in variables
@@ -46,6 +46,6 @@ resource "aws_security_group" "aurora_sg" {
     to_port   = 5432
     protocol  = "tcp"
     # Adjust this based on your security requirements
-    security_groups = [module.tailscale.security_group_id, aws_security_group.ecs.id]
+    security_groups = [module.tailscale.security_group_id, aws_security_group.ecs.id, aws_security_group.k3s_sg.id]
   }
 }
