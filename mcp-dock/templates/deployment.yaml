@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mcp-dock.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mcp-dock.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "mcp-dock.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mcp-dock.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "mcp-dock.fullname" . }}-config
+        - name: mcpo
+          persistentVolumeClaim:
+            claimName: mcp-dock-pvc
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "--host"
+            - "0.0.0.0"
+            - "--port"
+            - "{{ .Values.service.port }}"
+            - "--config"
+            - "/mcpo/config/mcpo-config.json"
+            {{- if .Values.apiKey }}
+            - "--api-key"
+            - "{{ .Values.apiKey }}"
+            {{- end }}
+          env:
+            {{- range $name, $value := .Values.env }}
+            - name: {{ $name }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $name, $value := .Values.secrets }}
+            - name: {{ $name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mcp-dock.fullname" $ }}-secrets
+                  key: {{ $name }}
+            {{- end }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /mcpo/config
+            - name: mcpo
+              mountPath: /mcpo
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /docs
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /docs
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

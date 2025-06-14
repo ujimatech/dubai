@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mcp-dock.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mcp-dock.labels" . | nindent 4 }}
+data:
+  mcpo-config.json: |
+    {
+      "mcpServers": {
+        {{- $servers := .Values.mcpServers -}}
+        {{- $lastIndex := sub (len $servers) 1 -}}
+        {{- range $i, $server := $servers }}
+        "{{ $server.name }}": {
+          "command": "{{ $server.command }}",
+          "args": [
+            {{- range $j, $arg := $server.args }}
+            {{- if $j }}, {{ end }}"{{ $arg }}"
+            {{- end }}
+          ]
+          {{- if $server.env }}
+          ,
+          "env": {
+            {{- range $key, $val := $server.env }}
+            "{{ $key }}": "{{ $val }}"{{- if not (eq $key (last (keys $server.env))) }},{{ end }}
+            {{- end }}
+          }
+          {{- end }}
+        }{{- if lt $i $lastIndex }},{{ end }}
+        {{- end }}
+      }
+    }

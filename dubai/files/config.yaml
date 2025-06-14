@@ -1,0 +1,104 @@
+# Model Configuration
+model_list:
+  - model_name: deepseek-chat-v3-0324:free
+    litellm_params:
+      model: openai/deepseek/deepseek-chat-v3-0324:free
+      api_key: {{ .Values.litellm.openrouter.openrouter_api_key }}
+      api_base: {{ .Values.litellm.openrouter.api_base_url }}
+
+  - model_name: claude-opus-4
+    litellm_params:
+      model: openai/anthropic/claude-opus-4
+      api_key: {{ .Values.litellm.openrouter.openrouter_api_key }}
+      api_base: {{ .Values.litellm.openrouter.api_base_url }}
+
+  - model_name: gemini-2.5-flash-preview-05-20
+    litellm_params:
+      model: openai/google/gemini-2.5-flash-preview-05-20
+      api_key: {{ .Values.litellm.openrouter.openrouter_api_key }}
+      api_base: {{ .Values.litellm.openrouter.api_base_url }}
+
+  - model_name: cohere-embed-english-v3
+    litellm_params:
+      model: bedrock/cohere.embed-english-v3
+      aws_role_name: {{ .Values.litellm.aws.irsa.roleArn }}
+      aws_region_name: us-west-2
+
+# General Settings
+general_settings:
+  master_key: {{ .Values.litellm.secrets.master_key }}
+  default_model: anthropic-claude-3-5-sonnet-20241022-v2:0
+  embedding_model: cohere-embed-english-v3
+  # Timeouts
+  request_timeout: 300
+  # Fail requests if database is unavailable
+  allow_requests_on_db_unavailable: true
+  max_parallel_requests: 1
+  # Health checks
+#  background_health_checks: true
+#  health_check_interval: 300
+
+# Router Settings
+#router_settings:
+#  # Routing strategy: simple_shuffle, least_busy, latency_based, usage_based
+#  routing_strategy: latency_based
+#  # Timeout for connections in seconds
+#  timeout: 30
+  # Model fallbacks if primary model fails
+#  model_fallbacks:
+#    claude-3-opus: ["claude-3-sonnet", "claude-v2"]
+#    claude-3-sonnet: ["claude-3-haiku", "claude-instant"]
+#    cohere-embed-multilingual: ["titan-embedding"]
+
+## API Key Configuration
+#api_key:
+#  use_key: true
+#  key: ${API_KEY}
+
+## Virtual Model Mapping
+#model_mapping:
+#  # OpenAI mappings
+#  gpt-4: claude-3-opus
+#  gpt-3.5-turbo: claude-3-haiku
+#  # Anthropic mappings
+#  claude-instant-v1: claude-instant
+#  claude-v2: claude-v2
+#  # Embedding model mappings
+#  text-embedding-ada-002: cohere-embed-multilingual
+
+# Server Configuration
+#server:
+#  # Enable health check endpoint
+#  health_check: true
+#  # CORS settings
+#  cors_allow_origins: ["*"]
+#  # Disable telemetry
+#  telemetry: false
+#  # Log settings
+#  log_level: "info"
+#  port: 80
+
+## Cache Configuration
+#cache:
+#  type: "redis"  # Optional - if using Redis cache
+#  redis_host: "localhost" # Change if Redis is elsewhere
+#  redis_port: 6379
+#  redis_password: "" # Set if needed
+#  cache_params:
+#    ttl: 300  # Time to live in seconds
+
+# Logging Configuration
+#litellm_settings:
+#  # Success logging
+#  success_callback: ["dynamodb"]
+#  # Failure logging
+#  failure_callback: ["dynamodb"]
+#  # Callbacks to track specific events
+#  callbacks: ["dynamodb"]
+#  # Database connection settings if using virtual keys
+#  database_url: ${PGVECTOR_DB_URL}
+#  database_connection_pool_limit: 20
+#  database_connection_timeout: 30
+#  # Alerting on failures
+#  alerting: ["slack"]
+#  alerting_threshold: 5

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: dubai-controller
+description: Helm chart for deploying dubai ops stuff.
+type: application
+version: 0.1.0
+appVersion: 1.0.0

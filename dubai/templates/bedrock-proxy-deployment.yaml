@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-litellm
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: litellm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: litellm
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ .Files.Get "files/config.yaml" | sha256sum }}
+      labels:
+        app: litellm
+    spec:
+      containers:
+        - name: litellm
+          image: "{{ .Values.litellm.image.repository }}:{{ .Values.litellm.image.tag }}"
+          imagePullPolicy: {{ .Values.litellm.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.litellm.env }}
+              - name: {{ $key }}
+                value: {{ $value | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.litellm.secrets }}
+              - name: {{ $key }}
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.global.projectName }}-{{ $.Values.global.entityId}}-secrets
+                    key: {{ $key }}
+            {{- end }}
+          ports:
+            - containerPort: {{ .Values.litellm.service.port }}
+          volumeMounts:
+            - name: litellm
+              mountPath: /litellm
+            - name: litellm-config
+              mountPath: /litellm/config.yaml
+              subPath: config.yaml
+          command: ["litellm"]
+          args: ["--config", "/litellm/config.yaml", "--port", "80", "--detailed_debug"]
+      volumes:
+        - name: litellm-config
+          configMap:
+            name: {{ $.Values.global.projectName }}-{{ $.Values.global.entityId}}-litellm-config
+        - name: litellm
+          persistentVolumeClaim:
+            claimName: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-litellm-pvc

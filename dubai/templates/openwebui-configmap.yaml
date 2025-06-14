@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.projectName }}-{{ .Values.global.entityId }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+  openwebui-config: |
+    {{ toYaml .Values.openwebui.env | nindent 4 }}
+    OPENAI_API_BASE_URL: {{ .Values.openwebui.env.OPENAI_API_BASE_URL | default (printf "%s-%s-litellm.%s-%s.svc.cluster.local/api/v1" .Values.global.projectName .Values.global.entityId .Values.global.projectName .Values.global.entityId) }}
+    RAG_OPENAI_API_BASE_URL: {{ .Values.openwebui.env.OPENAI_API_BASE_URL | default (printf "%s-%s-litellm.%s-%s.svc.cluster.local/api/v1" .Values.global.projectName .Values.global.entityId .Values.global.projectName .Values.global.entityId) }}

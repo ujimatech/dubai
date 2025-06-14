@@ -1,0 +1,15 @@
+apiVersion: v2
+name: mcp-dock
+description: A Helm chart for deploying MCP-to-OpenAPI proxy servers (MCPO)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - mcpo
+  - mcp
+  - openapi
+  - proxy
+home: https://github.com/open-webui/mcpo
+maintainers:
+  - name: Open WebUI
+    url: https://github.com/open-webui

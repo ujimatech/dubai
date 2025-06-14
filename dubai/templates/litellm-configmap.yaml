@@ -1,0 +1,12 @@
+# In your Helm chart templates folder, create a ConfigMap template:
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-litellm-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: litellm
+data:
+  # Use the tpl function to render a template file from your chart
+  config.yaml: |-
+{{ tpl (.Files.Get "files/config.yaml") . | indent 4 }}

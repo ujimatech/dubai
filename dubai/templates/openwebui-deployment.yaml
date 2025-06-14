@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-openwebui
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: openwebui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openwebui
+  template:
+    metadata:
+      labels:
+        app: openwebui
+    spec:
+      containers:
+        - name: openwebui
+          image: "{{ .Values.openwebui.image.repository }}:{{ .Values.openwebui.image.tag }}"
+          imagePullPolicy: {{ .Values.openwebui.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.openwebui.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.openwebui.secrets }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.global.projectName }}-{{ $.Values.global.entityId}}-secrets
+                  key: {{ $key }}
+            {{- end }}
+          ports:
+            - containerPort: {{ .Values.openwebui.service.port }}
+          volumeMounts:
+            - name: openwebui-storage
+              mountPath: /openwebui
+      volumes:
+        - name: openwebui-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-openwebui-pvc

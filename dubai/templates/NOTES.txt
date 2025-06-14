@@ -1,0 +1,57 @@
+
+{{- if .Values.openwebui.service.type }}
+{{- $serviceType := .Values.openwebui.service.type }}
+{{- $servicePort := .Values.openwebui.service.port }}
+{{- $nodePort := .Values.openwebui.service.nodePort }}
+{{- $projectName := .Values.global.projectName }}
+
+{{- if eq $serviceType "NodePort" }}
+1. The OpenWebUI service is exposed via NodePort. You can access it using the following:
+
+   URL: http://<NodeIP>:{{ $nodePort }}
+
+   Replace `<NodeIP>` with the IP address of any node in your cluster.
+
+{{- else if eq $serviceType "ClusterIP" }}
+1. The OpenWebUI service is exposed internally within the cluster. You can access it using:
+
+   URL: http://{{ $projectName }}-openwebui.default.svc.cluster.local:{{ $servicePort }}
+
+   Replace `default` with your namespace if different.
+
+{{- else if eq $serviceType "LoadBalancer" }}
+1. The OpenWebUI service is exposed via LoadBalancer. Wait for the external IP to be assigned:
+
+   ```bash
+   kubectl get svc {{ $projectName }}-openwebui -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+   ```
+
+   Access the service using the external IP and port {{ $servicePort }}.
+
+{{- end }}
+{{- end }}
+
+2. The Bedrock Proxy service is exposed internally within the cluster. You can access it using:
+
+   URL: http://bedrockproxy.default.svc.cluster.local:80
+
+3. To check the status of your deployment, run:
+
+   ```bash
+   kubectl get pods -n default -l app=openwebui
+   kubectl get pods -n default -l app=bedrock-proxy
+   ```
+
+4. To view logs for the OpenWebUI container, run:
+
+   ```bash
+   kubectl logs -n default -l app=openwebui
+   ```
+
+5. To view logs for the Bedrock Proxy container, run:
+
+   ```bash
+   kubectl logs -n default -l app=bedrock-proxy
+   ```
+
+6. Secrets have been configured for sensitive data. Ensure they are managed securely.

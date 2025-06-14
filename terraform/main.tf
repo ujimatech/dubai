@@ -1,5 +1,11 @@
 terraform {
-  backend "local" {}
+  required_version = ">=1.11.0"
+  backend "s3" {
+    bucket = "hrt-statefiles-usw2"
+    key    = "dubai-infra.tfstate"
+    region = "us-west-2"
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -13,9 +19,13 @@ terraform {
       source  = "hashicorp/awscc"
       version = "~> 1.0"
     }
-    ansible = {
-      source = "ansible/ansible"
-      version = "1.3.0"
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "2.35.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "3.0.0-pre2"
     }
   }
 }
@@ -40,12 +50,16 @@ provider "tailscale" {
   api_key = var.tailscale_api_key
 }
 
-# module "tailscale-router" {
-#   source = "./modules/tailscale-routers"
-#
-#   advertised_routes  = ""
-#   ami_id             = ""
-#   tailscale_auth_key = ""
-# }
-# http://Bedroc-Proxy-UNcI1BpF0yeA-1099258264.us-west-2.elb.amazonaws.com/api/v1
+provider "kubernetes" {
+  alias = "dubai-kube"
 
+  config_path = "~/.kube/config"
+}
+
+provider "helm" {
+  alias = "dubai-kube"
+  kubernetes = {
+    config_path = "~/.kube/config"
+  }
+
+}

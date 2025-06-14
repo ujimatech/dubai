@@ -10,7 +10,7 @@ resource "aws_rds_cluster" "aurora_cluster" {
   engine_version     = "16.6"
   database_name      = "${var.project_name}"
   master_username    = var.postgres_db_user
-  master_password    = var.postgres_db_password # Store this securely in variables
+  master_password    = aws_secretsmanager_secret_version.postgres_db_password.secret_string_wo
 
   # Cost optimization settings
   serverlessv2_scaling_configuration {
@@ -46,6 +46,6 @@ resource "aws_security_group" "aurora_sg" {
     to_port   = 5432
     protocol  = "tcp"
     # Adjust this based on your security requirements
-    security_groups = [module.tailscale.security_group_id, aws_security_group.ecs.id, aws_security_group.k3s_sg.id]
+    security_groups = [module.tailscale.security_group_id, aws_security_group.k3s_sg.id]
   }
 }

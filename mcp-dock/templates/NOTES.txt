@@ -1,0 +1,42 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your MCP-to-OpenAPI proxy server has been deployed.
+
+{{- if eq .Values.service.type "NodePort" }}
+Your service has been configured with NodePort.
+
+To access the OpenAPI documentation:
+
+1. Find the assigned NodePort:
+   kubectl get svc {{ include "mcp-dock.fullname" . }} -o jsonpath='{.spec.ports[0].nodePort}'
+
+2. Get your node's external IP:
+   (If running on EC2 or cloud VM, this would be your instance's public IP)
+
+3. Access your MCP services at:
+   {{- range .Values.mcpServers }}
+   - {{ .name }}: http://<YOUR_NODE_IP>:<NODE_PORT>/{{ .name }}
+     OpenAPI docs: http://<YOUR_NODE_IP>:<NODE_PORT>/{{ .name }}/docs
+   {{- end }}
+
+   Example:
+   http://ec2-public-ip:30123/time
+   http://ec2-public-ip:30123/time/docs
+{{- else }}
+To access the OpenAPI documentation, forward the service port:
+
+  kubectl port-forward service/{{ include "mcp-dock.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+
+Then open:
+{{- range .Values.mcpServers }}
+- {{ .name }}: http://localhost:{{ $.Values.service.port }}/{{ .name }}
+  OpenAPI docs: http://localhost:{{ $.Values.service.port }}/{{ .name }}/docs
+{{- end }}
+{{- end }}
+
+IMPORTANT:
+- If using EC2 or any cloud provider, ensure your security group/firewall
+  allows incoming traffic on the NodePort range (30000-32767)
+- NodePort services expose endpoints on all nodes in your cluster
+
+Now you can interact with your MCP servers through standard REST APIs!

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-openwebui-pvc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: openwebui
+{{- if .Values.openwebui.persistence.labels }}
+{{- toYaml .Values.openwebui.persistence.labels | nindent 4 }}
+{{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: {{ .Values.openwebui.persistence.storageClassName | default "longhorn" }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-litellm-pvc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    backup: "enabled"
+    app: litellm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: {{ .Values.litellm.persistence.storageClassName | default "longhorn" }}

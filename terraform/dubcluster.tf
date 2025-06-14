@@ -18,17 +18,20 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-# # VPC and Subnet retrieval
-# data "aws_vpc" "default" {
-#   default = true
-# }
-#
-# data "aws_subnets" "default" {
-#   filter {
-#     name   = "vpc-id"
-#     values = [data.aws_vpc.default.id]
-#   }
-# }
+resource "aws_s3_bucket" "k3s_config_bucket" {
+  bucket = "${var.project_name}-k3s-config"
+}
+
+# Configure default encryption for the bucket
+resource "aws_s3_bucket_server_side_encryption_configuration" "k3s_config_bucket" {
+  bucket = aws_s3_bucket.k3s_config_bucket.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
 
 # ---------------------------------------
 # IAM Configuration
@@ -75,7 +78,7 @@ resource "aws_iam_policy" "ec2_discovery_policy" {
           "secretsmanager:UpdateSecret",
           "secretsmanager:TagResource"
         ]
-        Resource = "arn:aws:secretsmanager:*:*:secret:dubcluster-k3s-*"
+        Resource = [aws_secretsmanager_secret.k3s_token.id]
       }
     ]
   })
@@ -158,10 +161,20 @@ resource "aws_secretsmanager_secret_version" "k3s_token" {
 resource "aws_launch_template" "k3s" {
   name          = "dubcluster-k3s-template"
   image_id      = data.aws_ami.ubuntu.id
-  instance_type = "t4g.small" # Good balance for K3s nodes
+  instance_type = "m7g.large" # Good balance for K3s nodes
+
 
   iam_instance_profile {
     name = aws_iam_instance_profile.k3s_profile.name
+  }
+
+  instance_market_options {
+    market_type = "spot"
+
+    spot_options {
+      spot_instance_type = "one-time"
+      instance_interruption_behavior = "terminate"
+    }
   }
 
   vpc_security_group_ids = [aws_security_group.k3s_sg.id]
@@ -170,19 +183,11 @@ resource "aws_launch_template" "k3s" {
     device_name = "/dev/sda1"
 
     ebs {
-      volume_size           = 20 # Enough for K3s and basic workloads
+      volume_size           = 50 # Enough for K3s and basic workloads
       delete_on_termination = true
       volume_type           = "gp3"
     }
   }
-
-  # Very minimal user data - just enough to ensure SSM agent is ready
-  # The real provisioning happens via SSM document
-  # user_data = base64encode(<<-EOF
-  #   #!/bin/bash
-  #   apt-get update && apt-get -y install aws-cli
-  # EOF
-  # )
 
   tag_specifications {
     resource_type = "instance"
@@ -206,7 +211,7 @@ module "k3s_cluster" {
 
   fleet_prefix                  = "dubcluster-k3s"
   environment                   = "prod"
-  instance_count                = 0  # Start with 3 nodes (1 master, 2 workers)
+  instance_count                = 1 # Start with 3 nodes (1 master, 2 workers)
   external_launch_template_id   = aws_launch_template.k3s.id
   external_launch_template_version = "$Latest"
   subnet_ids                    = module.vpc.private_subnets
@@ -223,7 +228,8 @@ module "k3s_cluster" {
     ClusterName = "dubcluster"
   }
 
-  termination_policies          = ["OldestLaunchTemplate"]
+
+   termination_policies          = ["OldestLaunchTemplate"]
 }
 
 module "k3s_provisioner" {
@@ -237,7 +243,7 @@ module "k3s_provisioner" {
     CLUSTERNAME = {
       type        = "String"
       description = "Name of the K3s cluster"
-      default     = "dubcluster"
+      default     = var.project_name
     },
     K3SVERSION = {
       type        = "String"
@@ -251,6 +257,16 @@ module "k3s_provisioner" {
     TOKENSECRETNAME = {
       type        = "String"
       description = "AWS Secrets Manager secret name for cluster token"
+    },
+    K3SCONFIGBUCKET = {
+      type        = "String"
+      description = "k3s config bucket name"
+      default     = aws_s3_bucket.k3s_config_bucket.id
+    },
+    REGION = {
+      type        = "String"
+      description = "AWS region"
+      default     = var.aws_region
     }
   }
 
@@ -260,6 +276,8 @@ module "k3s_provisioner" {
     K3SVERSION       = "v1.33.0+k3s1"
     ASGNAME          = module.k3s_cluster.autoscaling_group_name
     TOKENSECRETNAME = aws_secretsmanager_secret.k3s_token.name
+    REGION           = var.aws_region
+    CLUSTERNAME     = var.project_name
   }
 
   # Enable automatic association to run on all instances
@@ -270,10 +288,6 @@ module "k3s_provisioner" {
     "aws:autoscaling:groupName" = module.k3s_cluster.autoscaling_group_name
   }
 
-  # Run immediately on instance launch, then every 30 minutes
-  # This ensures new nodes join and checks existing nodes
-  schedule_expression = "rate(30 minutes)"
-
   # Set compliance reporting
   compliance_severity = "HIGH"
 
@@ -281,6 +295,39 @@ module "k3s_provisioner" {
   max_concurrency     = "100%"
   max_errors          = "25%"
 }
+
+resource null_resource "k3s_OK_trigger" {
+  provisioner "local-exec" {
+      interpreter = ["/bin/bash", "-c"]
+      command = "./scripts/wait-for-k3s-master.sh"
+      environment = {
+        REGION = var.aws_region
+        ASG_NAME   = module.k3s_cluster.autoscaling_group_name
+      }
+  }
+  triggers = {
+    always_run = timestamp()
+  }
+}
+
+resource "null_resource" "load-k3s-config" {
+    provisioner "local-exec" {
+        interpreter = ["/bin/bash", "-c"]
+        command = "./scripts/load-k3s-config.sh"
+        environment = {
+          S3_BUCKET_NAME = aws_s3_bucket.k3s_config_bucket.id
+        }
+    }
+    triggers = {
+            always_run = timestamp()
+    }
+
+    depends_on = [
+        null_resource.k3s_OK_trigger,
+        module.k3s_provisioner
+    ]
+}
+
 
 # ---------------------------------------
 # Outputs

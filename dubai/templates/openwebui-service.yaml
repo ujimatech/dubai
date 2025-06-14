@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-openwebui
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: openwebui
+spec:
+  type: {{ .Values.openwebui.service.type }}
+  ports:
+    - port: {{ .Values.openwebui.service.port }}
+      targetPort: {{ .Values.openwebui.service.port }}
+      nodePort: {{ .Values.openwebui.service.nodePort }}
+  selector:
+    app: openwebui

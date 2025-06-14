@@ -1,0 +1,89 @@
+global:
+  projectName: "dubai"
+  entityId: ""
+
+# Default values for mcp-dock.
+nameOverride: "aws"
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/open-webui/mcpo
+  tag: "main"
+  pullPolicy: IfNotPresent
+
+# Configure the MCP servers to be included
+mcpServers:
+  - name: time
+    command: "uvx"
+    args: ["mcp-server-time", "--local-timezone=America/Chicago"]
+    # Example of environment variables for this server (if needed)
+    # env:
+    #   KEY1: "value1"
+    #   KEY2: "value2"
+
+  # Added AWS Labs core MCP server
+  - name: awslabs-core
+    command: "uvx"
+    args: ["awslabs.core-mcp-server@latest"]
+    # Example of environment variables
+    # env:
+    #   FASTMCP_LOG_LEVEL: "ERROR"
+
+  - name: awslabs-documentation
+    command: "uvx"
+    args: ["awslabs.aws-documentation-mcp-server@latest"]
+
+  - name: awslabs-diagram
+    command: "uvx"
+    args: ["awslabs.aws-diagram-mcp-server"]
+    env:
+      FASTMCP_LOG_LEVEL: "ERROR"
+
+  - name: code-server
+    command: "npx"
+    args: [ "mcp-remote@next", "http://code-server.dubai-8h018eh02e.svc.cluster.local:3000/mcp", "--allow-http"]
+
+    # Example of environment variables
+    # env:
+    #   FASTMCP_LOG_LEVEL: "ERROR"
+
+  # Uncomment to add GitHub MCP server
+  # - name: github
+  #   command: "github-mcp-server"
+  #   args: ["stdio"]
+  #   env:
+  #     GITHUB_PERSONAL_ACCESS_TOKEN: ""
+  #     GITHUB_TOOLSETS: "repos,issues,pull_requests,users"
+
+# Optional API key for securing the MCPO server
+apiKey: ""
+
+# Additional environment variables for the MCPO container itself
+env: {}
+  # Example:
+  # SOME_ENV_VAR: "value"
+
+# Secrets to be created and mounted as environment variables
+secrets: {}
+  # Example:
+  # github_token: "your-secret-token"
+
+persistence:
+  storageClassName: ""
+
+service:
+  type: NodePort
+  port: 8000
+  nodePort: 30001
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
