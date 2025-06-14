@@ -1,0 +1,40 @@
+C4Component
+    title Component Diagram for LiteLLM Proxy (Refined LLM Adapters)
+
+    Container(openwebui_app, "OpenWebUI Application", "Python, React", "Container: User interface that sends LLM requests.")
+    System(openrouter_llm, "OpenRouter LLM Provider", "Third-party Public LLM services.")
+    System(aws_bedrock_llm, "AWS Bedrock LLM Provider", "AWS Managed LLM services for sensitive data.")
+    Container(secrets_mgmt, "Secrets Management", "AWS Secrets Manager", "Container: Secure credential storage.")
+    Container(dubai_vpc, "DubAI VPC", "AWS Virtual Private Cloud", "Networking environment for secure internal communication.")
+
+
+    System_Boundary(litellm_proxy, "LiteLLM Proxy") {
+
+        Component(api_handler, "API Handler / Request Validator", "Python", "Receives and validates incoming LLM API requests.")
+        Component(std_layer, "Standardization Layer", "Python", "Transforms requests/responses to/from a consistent internal format.")
+        Component(llm_router, "LLM Router / Dispatcher", "Python", "Routes requests to the appropriate LLM Integration Adapter.")
+        Component(api_key_manager, "API Key Manager / Credential Retriever", "Python", "Securely fetches and manages LLM API keys/credentials for providers.")
+
+        Component(openrouter_adapter, "OpenRouter Adapter", "Python", "Integrates with OpenRouter API.")
+        Component(aws_bedrock_adapter, "AWS Bedrock Adapter", "Python, AWS SDK", "Integrates with AWS Bedrock via VPC-internal mechanisms.")
+
+
+        Rel(api_handler, std_layer, "Passes validated request to")
+        Rel(std_layer, llm_router, "Passes standardized request to")
+        Rel(llm_router, openrouter_adapter, "Dispatches Public LLM Request to")
+        Rel(llm_router, aws_bedrock_adapter, "Dispatches Sensitive LLM Request to")
+
+        Rel(api_key_manager, secrets_mgmt, "Retrieves API Keys/Credentials From", "AWS SDK Calls")
+        Rel(openrouter_adapter, api_key_manager, "Uses API Key From")
+        Rel(aws_bedrock_adapter, api_key_manager, "Uses IAM Role/Key From")
+
+        Rel(openrouter_adapter, openrouter_llm, "Makes API calls to", "Public Internet")
+        Rel(aws_bedrock_adapter, aws_bedrock_llm, "Makes API calls to", "VPC Endpoint")
+
+        Rel(llm_router, dubai_vpc, "Operates within", "Private Network Access")
+        Rel(aws_bedrock_llm, dubai_vpc, "Accessed via", "Private Endpoint")
+
+    }
+
+    Rel(openwebui_app, api_handler, "Sends LLM requests to", "API Calls")
+    Rel(api_handler, openwebui_app, "Sends responses to")

@@ -1,0 +1,46 @@
+C4Container
+    title Container Diagram for DubAI AI Orchestration Hub
+
+    Person(user, "Enterprise AI User", "Uses Web Browser")
+    Person(devops, "DevOps Engineer / Cloud Admin", "Manages Infrastructure")
+    System(external_llm, "External LLM Provider", "Third-party LLM services")
+
+    System_Boundary(dubai_system, "DubAI AI Orchestration Hub") {
+
+        Container(openwebui_app, "OpenWebUI Application", "Python, React", "User interface for AI orchestration and model interaction.")
+        Container(litellm_proxy, "LiteLLM Proxy", "Python", "Standardizes API calls to external LLMs.")
+
+        ContainerDb(pgsql_db, "PostgreSQL Database", "AWS Aurora Serverless", "Stores application data, user configurations, and metadata.")
+        ContainerDb(persistent_storage, "Persistent Storage", "Longhorn, AWS S3", "Stores files, embeddings, and RAG data.")
+        Container(secrets_mgmt, "Secrets Management", "AWS Secrets Manager", "Securely stores API keys, database credentials and sensitive config.")
+        Container(s3_object_storage, "S3 Object Storage", "AWS S3", "Generic object storage for kubeconfig, attachments, large data.")
+
+        Container(k8s_cluster, "Kubernetes Cluster", "K3s on AWS EC2", "Orchestration platform for containerized applications.")
+        Container(network_gateway, "Network Gateway / VPN", "Tailscale", "Provides secure network access to the cluster.")
+
+
+        Rel(user, openwebui_app, "Uses", "HTTPS")
+
+        Rel(openwebui_app, litellm_proxy, "Makes API calls to", "HTTPS/gRPC")
+        Rel(litellm_proxy, external_llm, "Queries", "API Calls")
+
+        Rel(openwebui_app, pgsql_db, "Reads/Writes", "DB Connection")
+        Rel(openwebui_app, persistent_storage,"Stores/Retrieves files", "File System / S3 API")
+        Rel(openwebui_app, secrets_mgmt, "Gets Credentials From", "AWS SDK")
+        Rel(openwebui_app, s3_object_storage, "Uses for objects", "AWS S3 API")
+        Rel(litellm_proxy, secrets_mgmt, "Gets LLM API Keys From", "AWS SDK")
+
+
+        Rel(k8s_cluster, openwebui_app, "Hosts")
+        Rel(k8s_cluster, litellm_proxy, "Hosts")
+        Rel(k8s_cluster, persistent_storage, "Manages volumes for")
+        %% Keep relation to S3 as direct unless a specific component within K8s does it
+        Rel(k8s_cluster, s3_object_storage, "Stores Kubeconfig in", "AWS S3 API")
+
+
+        Rel(devops, k8s_cluster, "Manages Platform", "kubectl/Helm/SSM")
+        Rel(devops, network_gateway, "Connects via", "VPN Client")
+        Rel(devops, secrets_mgmt, "Manages Secrets", "AWS Console/CLI")
+
+        Rel(network_gateway, k8s_cluster, "Provides Secure Access To")
+    }
