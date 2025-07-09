@@ -53,7 +53,7 @@ resource "kubernetes_manifest" "root_app_of_apps" {
         # Point to the Git repo and the path where you stored the ApplicationSet YAML
         "repoURL"        = var.gitops_repo_url
         "targetRevision" = var.gitops_repo_branch
-        "path"           = "argocd-config" # The directory you created in Step 1
+        "path"           = "terraform/argocd-config" # The directory you created in Step 1
       }
       "destination" = {
         # The destination for the resources found in the 'path'.
