@@ -5,6 +5,7 @@ resource "helm_release" "mcp_dock" {
   namespace = "${var.project_name}-${var.entity_id}"
   depends_on = [helm_release.dubai-interface]
   atomic = true
+  replace = true
 
   set = [
     {

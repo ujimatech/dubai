@@ -41,8 +41,7 @@ mcpServers:
 
   - name: code-server
     command: "npx"
-    args: [ "mcp-remote@next", "http://code-server.dubai-8h018eh02e.svc.cluster.local:3000/mcp", "--allow-http"]
-
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "/projects"]
     # Example of environment variables
     # env:
     #   FASTMCP_LOG_LEVEL: "ERROR"

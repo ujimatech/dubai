@@ -10,3 +10,17 @@ spec:
   - {{ .Values.global.projectName }}-{{ .Values.global.entityId}}
   retain: 1
   concurrency: 2
+---
+
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-projects-backup-job
+  namespace: longhorn-system
+spec:
+  cron: "0 * * * *"
+  task: "backup"
+  groups:
+  - "{{ .Values.global.projectName }}-{{ .Values.global.entityId}}-projects"
+  retain: 1
+  concurrency: 2

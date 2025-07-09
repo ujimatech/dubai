@@ -6,15 +6,27 @@ model_list:
       api_key: {{ .Values.litellm.openrouter.openrouter_api_key }}
       api_base: {{ .Values.litellm.openrouter.api_base_url }}
 
-  - model_name: claude-opus-4
+  - model_name: claude-sonnet-4
     litellm_params:
-      model: openai/anthropic/claude-opus-4
+      model: openai/anthropic/claude-sonnet-4
+      api_key: {{ .Values.litellm.openrouter.openrouter_api_key }}
+      api_base: {{ .Values.litellm.openrouter.api_base_url }}
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: openai/google/gemini-2.5-flash
+      api_key: {{ .Values.litellm.openrouter.openrouter_api_key }}
+      api_base: {{ .Values.litellm.openrouter.api_base_url }}
+
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: openai/google/gemini-2.5-pro
       api_key: {{ .Values.litellm.openrouter.openrouter_api_key }}
       api_base: {{ .Values.litellm.openrouter.api_base_url }}
 
   - model_name: gemini-2.5-flash-preview-05-20
     litellm_params:
-      model: openai/google/gemini-2.5-flash-preview-05-20
+      model: openai/openai/gpt-4.1-mini
       api_key: {{ .Values.litellm.openrouter.openrouter_api_key }}
       api_base: {{ .Values.litellm.openrouter.api_base_url }}
 

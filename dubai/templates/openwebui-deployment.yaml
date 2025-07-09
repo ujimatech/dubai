@@ -36,7 +36,12 @@ spec:
           volumeMounts:
             - name: openwebui-storage
               mountPath: /openwebui
+            - name: projects
+              mountPath: /projects
       volumes:
         - name: openwebui-storage
           persistentVolumeClaim:
             claimName: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-openwebui-pvc
+        - name: projects
+          persistentVolumeClaim:
+            claimName: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-projects-pvc

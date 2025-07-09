@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: openwebui
+  annotations:
+    tailscale.com/expose: "true"
 spec:
   type: {{ .Values.openwebui.service.type }}
   ports:

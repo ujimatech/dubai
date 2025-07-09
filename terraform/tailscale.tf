@@ -97,61 +97,9 @@ resource "aws_iam_role" "tailscale_router" {
   })
 }
 
-# # IAM policy to allow EC2 Instance Connect
-# resource "aws_iam_role_policy" "ec2_connect" {
-#   name = "ec2-instance-connect"
-#   role = aws_iam_role.tailscale_router.id
-#
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect = "Allow"
-#         Action = [
-#           "ec2-instance-connect:SendSSHPublicKey"
-#         ]
-#         Resource = "*"
-#       }
-#     ]
-#   })
-# }
-#
-# # Instance profile
-# resource "aws_iam_instance_profile" "tailscale_router" {
-#   name = "tailscale-router-profile"
-#   role = aws_iam_role.tailscale_router.name
-# }
-
 # Outputs
 output "instance_connect_endpoint_id" {
   value       = aws_ec2_instance_connect_endpoint.tailscale_router.id
   description = "EC2 Instance Connect Endpoint ID"
 }
 
-# resource "ansible_playbook" "install_dnsmasq" {
-#   playbook   = "${path.module}/ansible/playbook.yml"
-#   name       = "install_dnsmasq"
-#
-#   # Variables to pass to Ansible
-#   extra_vars = {
-#     vpc_dns_ip = cidrhost(module.vpc.vpc_cidr_block, 2)
-#   }
-#
-#   # # Inventory configuration
-#   # inventory = {
-#   #   tailscale_router = {
-#   #     hosts = [aws_instance.tailscale_router.private_ip]
-#   #     vars = {
-#   #       ansible_user                 = "ubuntu"
-#   #       ansible_ssh_private_key_file = "~/.ssh/your_key.pem"
-#   #       ansible_become              = true
-#   #       ansible_become_method       = "sudo"
-#   #     }
-#   #   }
-#   # }
-# }
-#
-# resource "ansible_group" "tailscale_router" {
-#   name = "tailscale_router"
-#   children = [module.tailscale.]
-# }

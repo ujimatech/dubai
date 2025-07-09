@@ -1,0 +1,17 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-projects
+provisioner: driver.longhorn.io
+parameters:
+  numberOfReplicas: "2"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+  fsType: "ext4"
+  backupTargetName: "default"
+  recurringJobSelector: '[
+     {
+       "name":"{{ .Values.global.projectName }}-{{ .Values.global.entityId}}-projects",
+       "isGroup":true
+     }
+  ]'

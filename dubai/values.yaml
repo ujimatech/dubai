@@ -5,7 +5,7 @@ global:
 openwebui:
   image:
     repository: ghcr.io/open-webui/open-webui
-    tag: v0.6.13
+    tag: v0.6.15
     pullPolicy: IfNotPresent
   persistence:
     storageClassName: ""
@@ -51,6 +51,9 @@ litellm:
   openrouter:
     api_base_url: "https://openrouter.ai/api/v1"
     openrouter_api_key: ""
+  aws:
+    irsa:
+      roleArn: "arn:aws:iam::166531731337:role/k3s-irsa-awscli"
 
 
 

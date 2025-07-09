@@ -1,0 +1,49 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+
+.heroBanner {
+  padding: 4rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  min-height: auto;
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 2rem;
+    min-height: auto;
+  }
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px; /* Added gap for spacing between buttons */
+  margin-top: 20px; /* Added margin to push buttons down from text */
+}
+
+.heroDescription {
+  font-size: 1.25em; /* Slightly larger text for emphasis */
+  max-width: 800px; /* Constrain width for readability */
+  margin: 1.5rem auto; /* Center it with spacing */
+  color: var(--ifm-hero-text-color); /* Inherit hero text color */
+}
+
+.heroImage {
+  margin-bottom: 1px; /* Adjust spacing below the image */
+}
+
+.sectorMarquee {
+  margin-top: 3rem; /* Spacing above */
+  font-size: 1.1em;
+  opacity: 0.8; /* Slightly subdued */
+  color: var(--ifm-hero-text-color);
+}
+
+.sectorHighlight {
+  font-weight: bold; /* Make the sector names stand out */
+}

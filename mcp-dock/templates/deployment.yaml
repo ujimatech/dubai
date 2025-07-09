@@ -24,6 +24,9 @@ spec:
         - name: mcpo
           persistentVolumeClaim:
             claimName: mcp-dock-pvc
+        - name: projects
+          persistentVolumeClaim:
+            claimName: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-projects-pvc
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}"
@@ -56,6 +59,8 @@ spec:
               mountPath: /mcpo/config
             - name: mcpo
               mountPath: /mcpo
+            - name: projects
+              mountPath: /projects
 
           ports:
             - name: http

@@ -31,3 +31,18 @@ spec:
     requests:
       storage: 1Gi
   storageClassName: {{ .Values.litellm.persistence.storageClassName | default "longhorn" }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-projects-pvc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    backup: "enabled"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: {{ .Values.global.projectName }}-{{ .Values.global.entityId}}-projects

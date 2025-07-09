@@ -10,6 +10,18 @@ variable "tailscale_api_key" {
   sensitive   = true
 }
 
+variable "ts_k8_operator_client_id" {
+    description = "Tailscale Kubernetes operator client ID"
+    type        = string
+    sensitive   = true
+}
+
+variable "ts_k8_operator_client_secret" {
+    description = "Tailscale Kubernetes operator client secret"
+    type        = string
+    sensitive   = true
+}
+
 variable "s3_access_key_id" {
     description = "S3 access key ID"
     type        = string
