@@ -1,0 +1,44 @@
+#{{/*
+#  This template iterates over the 'applications' list in values.yaml.
+#  For each enabled application, it generates an ArgoCD Application manifest.
+#*/}}
+{{- range .Values.applications }}
+{{- if .enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $.Values.global.projectName }}-{{ $.Values.global.entityId }}-{{ .name }}
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "{{ .wave | default 0 }}"
+spec:
+  project: default
+  source:
+    repoURL: {{ $.Values.spec.source.repoURL }}
+    targetRevision: {{ $.Values.spec.source.targetRevision }}
+    path: charts/{{ .chart }}
+    helm:
+      releaseName: {{ $.Release.Name }}-{{ .name }}
+      parameters:
+        - name: "global.entityId"
+          value: "{{ $.Values.global.entityId }}"
+        - name: "global.projectName"
+          value: "{{ $.Values.global.projectName }}"
+        {{- if eq .name "mcp-dock" }}
+        - name: "persistence.storageClassName"
+          value: "dubai-{{ $.Values.global.entityId }}"
+        {{- end }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ $.Values.global.projectName }}-{{ $.Values.global.entityId }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+{{- end }}
+{{- end }}

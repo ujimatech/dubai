@@ -1,0 +1,20 @@
+# Global values that will be passed down from the ApplicationSet
+global:
+  entityId: ""
+  projectName: "dubai"
+
+# A list of the child applications that make up a full tenant deployment
+applications:
+  - name: "storage"
+    # This corresponds to the chart directory name in your repo
+    chart: "dubai-controller"
+    enabled: true
+
+  - name: "interface"
+    # This corresponds to the 'dubai' chart from your original setup [5]
+    chart: "dubai"
+    enabled: true
+
+  - name: "mcp-dock"
+    chart: "mcp-dock"
+    enabled: true

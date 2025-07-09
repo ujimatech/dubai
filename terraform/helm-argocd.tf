@@ -1,15 +1,24 @@
+variable "gitops_repo_url" {
+  default = "https://github.com/ujimatech/dubai"
+}
+variable "gitops_repo_branch" {
+  default = "multitenant-argocd"
+}
+variable "tenants" {
+  default = ""
+}
+
 resource "kubernetes_namespace" "argocd" {
   metadata {
     name = "argocd"
   }
+  provider = kubernetes.dubai-kube
 }
-
 resource "helm_release" "argocd" {
   name       = "argocd"
   namespace  = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
-  version    = "8.1.2"
 
   # -- Enable the ApplicationSet Controller --
   set = [
@@ -22,6 +31,7 @@ resource "helm_release" "argocd" {
   depends_on = [
     kubernetes_namespace.argocd
   ]
+  provider = "helm.dubai-kube"
 }
 
 resource "kubernetes_manifest" "dubai_applicationset" {
@@ -33,40 +43,43 @@ resource "kubernetes_manifest" "dubai_applicationset" {
       "namespace" = "argocd"
     }
     "spec" = {
-      # Use the "List" generator to provide a static list of tenants
       "generators" = [
         {
           "list" = {
-            # Terraform will construct this list of elements dynamically
             "elements" = [
               for key, tenant in var.tenants : {
-                # These key-value pairs become the template variables (e.g., {{entityId}})
-                "entityId" = tenant.entity_id
-                "tenantKey" = key # e.g., "tenant-alpha"
+                "entityId"  = tenant.entity_id,
+                "tenantKey" = key
               }
             ]
           }
         }
       ]
-      # This is the template for each ArgoCD Application that will be created
+      # This template now creates the PARENT App of Apps
       "template" = {
         "metadata" = {
-          # e.g., "dubai-8h018eh02e"
-          "name" = "${var.project_name}-{{entityId}}"
+          # Name of the parent app, e.g., "dubai-8h018eh02e"
+          "name" = "${var.project_name}-dddd"
         }
         "spec" = {
           "project" = "default"
           "source" = {
             "repoURL"        = var.gitops_repo_url
             "targetRevision" = var.gitops_repo_branch
-            "path"           = var.gitops_app_chart_path
+
+            # --- THE KEY CHANGE ---
+            # Point to your new 'dubai-bundle' parent chart
+            "path"           = "terraform/dubai-bundle"
+
             "helm" = {
-              "releaseName" = "${var.project_name}-interface"
-              # Pass tenant-specific values to the Helm chart
+              # This becomes the Helm release name for the parent chart
+              "releaseName" = "${var.project_name}-dddd"
+
+              # Pass the tenant identifiers to the parent chart's values.yaml
               "parameters" = [
                 {
                   "name"  = "global.entityId"
-                  "value" = "{{entityId}}"
+                  "value" = "dddd"
                 },
                 {
                   "name"  = "global.projectName"
@@ -77,17 +90,14 @@ resource "kubernetes_manifest" "dubai_applicationset" {
           }
           "destination" = {
             "server"    = "https://kubernetes.default.svc"
-            # Deploy into the tenant's dedicated namespace
-            "namespace" = "${var.project_name}-{{entityId}}"
+            # The parent app's destination is the tenant namespace
+            "namespace" = "${var.project_name}-dddd"
           }
           "syncPolicy" = {
             "automated" = {
               "prune"    = true
               "selfHeal" = true
             }
-            "syncOptions" = [
-              "CreateNamespace=false" # Terraform manages the namespace
-            ]
           }
         }
       }
@@ -96,6 +106,41 @@ resource "kubernetes_manifest" "dubai_applicationset" {
 
   depends_on = [
     helm_release.argocd,
-    kubernetes_secret.tenant_app_secrets
   ]
+  provider = kubernetes.dubai-kube
 }
+
+# # main.tf
+#
+# # --- Step 1: Fetch the SSH Private Key from AWS Secrets Manager ---
+# # This data source securely retrieves the secret value during the terraform apply.
+# # The IAM role/user running Terraform needs 'secretsmanager:GetSecretValue' permission.
+# data "aws_secretsmanager_secret_version" "argocd_ssh_private_key" {
+#   # Use the exact name you gave the secret in AWS Secrets Manager
+#   secret_id = "dubai/argocd/git-ssh-private-key"
+# }
+#
+#
+# # --- Step 2: Create the Kubernetes Secret for ArgoCD using the fetched value ---
+# resource "kubernetes_secret" "private_repo_creds" {
+#   metadata {
+#     name      = "dubai-gitops-repo"
+#     namespace = "argocd"
+#     labels = {
+#       "argocd.argoproj.io/secret-type" = "repository"
+#     }
+#   }
+#
+#   string_data = {
+#     "url" = "git@github.com:your-org/your-private-repo.git"
+#     "type" = "git"
+#
+#     # --- THIS IS THE KEY CHANGE ---
+#     # Instead of reading from a local file, we use the value retrieved
+#     # from the data source above.
+#     # Note: If you stored a key/value secret, use jsondecode() to extract the value.
+#     # If you stored it as plain text (like the CLI command did), this is all you need.
+#     "sshPrivateKey" = data.aws_secretsmanager_secret_version.argocd_ssh_private_key.secret_string
+#   }
+# }
+#

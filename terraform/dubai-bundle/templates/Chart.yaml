@@ -1,0 +1,5 @@
+apiVersion: v2
+name: dubai-bundle
+description: The App of Apps parent chart for deploying a complete Dubai tenant stack.
+type: application
+version: 0.1.0
