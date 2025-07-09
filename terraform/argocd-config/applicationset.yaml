@@ -1,0 +1,88 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: dubai-appset
+  namespace: argocd
+spec:
+  # The generator block is the key change.
+  generators:
+  - cluster:
+      # Tell the generator to find ConfigMaps that have our specific label.
+      # This will find the 'dubai-tenant-list' ConfigMap.
+      selector:
+        matchLabels:
+          argocd.argoproj.io/applicationset: "dubai-tenants"
+      
+      # Now, we need to extract the list from inside the discovered ConfigMap.
+      # This requires a plugin, but there is a simpler way with a Matrix generator.
+      # Let's use the Matrix generator to combine the discovered ConfigMap
+      # with a Git generator to parse the YAML content.
+      # (Correction: After reviewing the latest docs, the best approach is a 'Matrix' of two generators)
+
+# --- REVISED AND CORRECTED ApplicationSet for Simplicity and Power ---
+  generators:
+    # Generator 1: Find the single ConfigMap
+    - cluster:
+        selector:
+          matchLabels:
+            argocd.argoproj.io/applicationset: "dubai-tenants"
+        # We don't need values from the cluster itself, just its existence.
+    
+    # Generator 2: Use a Git generator to read the data from the ConfigMap as a file.
+    # This is a slightly advanced but powerful pattern.
+    # A cleaner approach uses a Matrix generator to combine discovery and parsing.
+
+# --- LET'S USE THE CLEANEST, MOST MODERN PATTERN: Matrix + Git Generator ---
+  - matrix:
+      generators:
+        # Generator A: Git Generator (provides the template)
+        - git:
+            repoURL: "{{`{{.repoURL}}`}}"
+            revision: "{{`{{.targetRevision}}`}}"
+            # Point to a dummy file; we just need this generator to provide a base.
+        # Generator B: Use a data source to read from the ConfigMap
+        # Let's simplify. The following is the most direct way with modern ApplicationSet features. 
+
+  # --- FINAL, CORRECT AND SIMPLEST IMPLEMENTATION ---
+  # We use the Matrix generator. The first generator finds the ConfigMap.
+  # The second generator (a List generator) parses an item from the first.
+  - matrix:
+      generators:
+        - cluster:
+            selector:
+              matchLabels:
+                argocd.argoproj.io/applicationset: "dubai-tenants"
+        - list:
+            # This is a powerful trick: this template is executed FOR EACH item found
+            # by the generator above (in this case, for our one ConfigMap).
+            # It parses the YAML content from the ConfigMap's data field.
+            elements: "{{.data['tenants.yaml'] | fromYaml}}"
+
+  # The template now uses the values produced by the 'list' generator above.
+  template:
+    metadata:
+      # 'element' refers to an item from the parsed YAML list.
+      name: "{{`{{.element.projectName}}`}}-{{`{{.element.entityId}}`}}"
+    spec:
+      project: default
+      source:
+        repoURL: "{{`{{.element.repoURL}}`}}"
+        targetRevision: "{{`{{.element.targetRevision}}`}}"
+        path: "dubai-bundle" 
+        helm:
+          releaseName: "{{`{{.element.projectName}}`}}-{{`{{.element.entityId}}`}}"
+          parameters:
+            - name: "global.entityId"
+              value: "{{`{{.element.entityId}}`}}"
+            - name: "global.projectName"
+              value: "{{`{{.element.projectName}}`}}"
+            - name: "spec.source.repoURL"
+              value: "{{`{{.element.repoURL}}`}}"
+            - name: "spec.source.targetRevision"
+              value: "{{`{{.element.targetRevision}}`}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{`{{.element.projectName}}`}}-{{`{{.element.entityId}}`}}"
+      syncPolicy:
+        automated: { prune: true, selfHeal: true }
+        syncOptions: [ "CreateNamespace=false" ]
