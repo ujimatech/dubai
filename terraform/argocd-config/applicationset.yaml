@@ -9,7 +9,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/ujimatech/dubai.git # The repo where this file lives.
-        revision: multitenent-argo
+        revision: multitenent-argocd
         files:
           # This is the key: discover every .yaml file inside the 'tenants' directory.
           - path: "tenants/*.yaml"
