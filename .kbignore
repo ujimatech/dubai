@@ -45,5 +45,7 @@ __pycache__
 open_web_ui_client
 
 .terraform
+.terraform.lock.hcl
+.git/
 
 # End of https://www.toptal.com/developers/gitignore/api/react,visualstudiocode

@@ -1,0 +1,4 @@
+projectName: "tenant-a"
+entityId: "ddd"
+repoURL: "https://github.com/ujimatech/dubai.git"
+targetRevision: "multitenent-argo"
