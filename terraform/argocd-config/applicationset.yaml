@@ -18,27 +18,27 @@ spec:
   template:
     metadata:
       # '{{.projectName}}' and '{{.entityId}}' are fields from a tenant's YAML file.
-      name: '{{.projectName}}-{{.entityId}}'
+      name: '{{projectName}}-{{entityId}}'
     spec:
       project: default
       source:
-        repoURL: "{{.repoURL}}"
-        targetRevision: "{{.targetRevision}}"
+        repoURL: "{{repoURL}}"
+        targetRevision: "{{targetRevision}}"
         path: "terraform/dubai-bundle" # Path to the App of Apps chart
         helm:
-          releaseName: "{{.projectName}}-{{.entityId}}"
+          releaseName: "{{projectName}}-{{entityId}}"
           parameters:
             - name: "global.entityId"
-              value: "{{.entityId}}"
+              value: "{{entityId}}"
             - name: "global.projectName"
-              value: "{{.projectName}}"
+              value: "{{projectName}}"
             - name: "spec.source.repoURL"
-              value: "{{.repoURL}}"
+              value: "{{repoURL}}"
             - name: "spec.source.targetRevision"
-              value: "{{.targetRevision}}"
+              value: "{{targetRevision}}"
       destination:
         server: https://kubernetes.default.svc
-        namespace: "{{.projectName}}-{{.entityId}}"
+        namespace: "{{projectName}}-{{entityId}}"
       syncPolicy:
         automated: { prune: true, selfHeal: true }
         syncOptions: [ "CreateNamespace=true" ]
