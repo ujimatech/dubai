@@ -15,8 +15,8 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: {{ spec.source.repoURL }}
-    targetRevision: {{ spec.source.targetRevision }}
+    repoURL: {{ $.Values.spec.source.repoURL }}
+    targetRevision: {{ $.Values.spec.source.targetRevision }}
     path: charts/{{ .chart }}
     helm:
       releaseName: {{ $.Release.Name }}-{{ .name }}
@@ -24,14 +24,14 @@ spec:
         - name: "global.entityId"
           value: "{{ $.Values.global.entityId }}"
         - name: "global.projectName"
-          value: "{{ global.projectName }}"
+          value: "{{ $.Values.global.projectName }}"
         {{- if eq .name "mcp-dock" }}
         - name: "persistence.storageClassName"
-          value: "dubai-{{ global.entityId }}"
+          value: "dubai-{{ $.Values.global.entityId }}"
         {{- end }}
   destination:
     server: https://kubernetes.default.svc
-    namespace: {{ global.projectName }}-{{ global.entityId }}
+    namespace: {{ $.Values.global.projectName }}-{{ $.Values.global.entityId }}
   syncPolicy:
     automated:
       prune: true
