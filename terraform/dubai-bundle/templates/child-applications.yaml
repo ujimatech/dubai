@@ -13,12 +13,12 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/sync-wave: "{{ .wave | default 0 }}"
+    argocd.argoproj.io/sync-wave: "{{ wave | default 0 }}"
 spec:
   project: default
   source:
-    repoURL: {{ $.Values.spec.source.repoURL }}
-    targetRevision: {{ $.Values.spec.source.targetRevision }}
+    repoURL: {{ spec.source.repoURL }}
+    targetRevision: {{ spec.source.targetRevision }}
     path: charts/{{ .chart }}
     helm:
       releaseName: {{ $.Release.Name }}-{{ .name }}
@@ -26,14 +26,14 @@ spec:
         - name: "global.entityId"
           value: "{{ $.Values.global.entityId }}"
         - name: "global.projectName"
-          value: "{{ $.Values.global.projectName }}"
+          value: "{{ global.projectName }}"
         {{- if eq .name "mcp-dock" }}
         - name: "persistence.storageClassName"
-          value: "dubai-{{ $.Values.global.entityId }}"
+          value: "dubai-{{ global.entityId }}"
         {{- end }}
   destination:
     server: https://kubernetes.default.svc
-    namespace: {{ $.Values.global.projectName }}-{{ $.Values.global.entityId }}
+    namespace: {{ global.projectName }}-{{ global.entityId }}
   syncPolicy:
     automated:
       prune: true

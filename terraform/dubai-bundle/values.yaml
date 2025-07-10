@@ -1,7 +1,7 @@
 # Global values that will be passed down from the ApplicationSet
 global:
   entityId: ""
-  projectName: "dubai"
+  projectName: ""
 
 # A list of the child applications that make up a full tenant deployment
 applications:
