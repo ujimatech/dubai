@@ -1,0 +1,4 @@
+projectName: "wallyworld"
+entityId: "ddd"
+repoURL: "https://github.com/ujimatech/dubai.git"
+targetRevision: "multitenant-argocd"
