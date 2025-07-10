@@ -10,9 +10,9 @@ spec:
     - git:
         repoURL: https://github.com/ujimatech/dubai.git # The repo where this file lives.
         revision: multitenant-argocd
-        directories:
+        files:
           # This is the key: discover every .yaml file inside the 'tenants' directory.
-          - path: "tenants"
+          - path: "tenants/tenant-dddd.yaml"
 
   # The template uses the content of each discovered file to generate an application.
   template:
