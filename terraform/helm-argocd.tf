@@ -1,5 +1,5 @@
 variable "gitops_repo_url" {
-  default = "https://github.com/ujimatech/dubai"
+  default = "https://github.com/ujimatech/dubai.git"
 }
 variable "gitops_repo_branch" {
   default = "multitenant-argocd"
