@@ -1,4 +1,4 @@
-projectName: "tenant-a"
-entityId: "ddd"
+projectName: "dubai"     # Changed from "tenant-a" to "dubai"
+entityId: "dddd"         # Changed from "ddd" to "dddd" (to match filename)
 repoURL: "https://github.com/ujimatech/dubai.git"
 targetRevision: "multitenent-argocd"
