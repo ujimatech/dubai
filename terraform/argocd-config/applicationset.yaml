@@ -12,7 +12,7 @@ spec:
         revision: multitenant-argocd
         files:
           # This is the key: discover every .yaml file inside the 'tenants' directory.
-          - path: "tenants/tenant-dddd.yaml"
+          - path: "tenants/*.yaml"
 
   # The template uses the content of each discovered file to generate an application.
   template:
