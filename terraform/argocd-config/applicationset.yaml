@@ -18,7 +18,7 @@ spec:
   template:
     metadata:
       # '{{.projectName}}' and '{{.entityId}}' are fields from a tenant's YAML file.
-      name: "{{.projectName}}-{{.entityId}}"
+      name: '{{.projectName}}-{{.entityId}}'
     spec:
       project: default
       source:
