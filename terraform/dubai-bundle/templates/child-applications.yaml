@@ -12,8 +12,6 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
-  annotations:
-    argocd.argoproj.io/sync-wave: "{{ wave | default 0 }}"
 spec:
   project: default
   source:
