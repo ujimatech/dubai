@@ -8,7 +8,7 @@ spec:
   # Use the Git generator to find files matching a wildcard path.
   generators:
     - git:
-        repoURL: https://github.com/ujimatech/dubai # The repo where this file lives.
+        repoURL: https://github.com/ujimatech/dubai.git # The repo where this file lives.
         revision: multitenent-argo
         files:
           # This is the key: discover every .yaml file inside the 'tenants' directory.
