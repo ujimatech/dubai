@@ -20,7 +20,7 @@ spec:
       # '{{.projectName}}' and '{{.entityId}}' are fields from a tenant's YAML file.
       name: '{{projectName}}-{{entityId}}'
     spec:
-      project: default
+      project: '{{projectName}}-{{entityId}}'
       source:
         repoURL: "{{repoURL}}"
         targetRevision: "{{targetRevision}}"
